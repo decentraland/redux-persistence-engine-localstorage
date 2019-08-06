@@ -51,7 +51,7 @@ test('should thow if json cannot be loaded', async t => {
   }
 })
 
-test('should use a provided reviver', async t => {
+test('should use a provided reviver on load', async t => {
   const reviver = sinon.stub()
   const engine = createEngine('key', null, reviver)
   await engine.load()
@@ -90,11 +90,23 @@ test('should reject if json cannot be serialized', async t => {
   }
 })
 
-test('should use a provided replacer', async t => {
+test('should use a provided replacer on save', async t => {
   const replacer = sinon.stub()
   const engine = createEngine('key', replacer)
 
   await engine.save({})
 
   t.is(replacer.called, true)
+})
+
+test('should throw errors as-is', async t => {
+  global['localStorage'].setItem = sinon.stub().throws(new Error('boo'))
+
+  const engine = createEngine('key')
+
+  try {
+    await engine.save({})
+  } catch (e) {
+    t.is(e.message, 'boo')
+  }
 })
